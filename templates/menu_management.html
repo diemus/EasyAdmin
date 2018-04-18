@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load utils %}
+{% block css %}
+    <link rel="stylesheet" href="/static/plugins/nestable2/jquery.nestable.css">
+    <link rel="stylesheet" href="/static/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css">
+{% endblock %}
+
+{% block js %}
+    <script src="/static/plugins/nestable2/jquery.nestable.js"></script>
+    <script src="/static/plugins/bootstrap-tagsinput/bootstrap-tagsinput.js"></script>
+    <script>
+        $(function () {
+            $('.dd').nestable({
+                maxDepth: 4,
+                onDragStart: function (l, e) {
+                    var id = $(e).data('id');
+                    var icon_class = $(e).data('icon_class');
+                    var caption = $(e).data('caption');
+                    var url = $(e).data('url');
+                    var url_names = $(e).data('url_names');
+                    $('#menu-form input[name=id]').val(id);
+                    $('#menu-form input[name=icon_class]').val(icon_class);
+                    $('#menu-form input[name=caption]').val(caption);
+                    $('#menu-form input[name=url]').val(url);
+                    $('#menu-form input[name=url_names]').tagsinput('removeAll');
+                    $('#menu-form input[name=url_names]').tagsinput('add', url_names);
+                },
+                callback: function (l, e) {
+
+
+                    $.ajax({
+                        url: '{{ request.path }}',
+                        method: 'PUT',
+                        data: JSON.stringify($('.dd').nestable('serialize')),
+                        dataType: 'JSON',
+                        success: function (data) {
+                            if (data.status === true) {
+
+                            } else {
+                                alert('保存出错！')
+                            }
+
+                        }
+                    })
+
+                }
+            });
+
+
+            //右侧按钮
+            $('.save-menu-change').click(function () {
+                var id = $('#menu-form input[name=id]').val();
+                var icon_class = $('#menu-form input[name=icon_class]').val();
+                var caption = $('#menu-form input[name=caption]').val();
+                var url = $('#menu-form input[name=url]').val();
+                var url_names = $('#menu-form input[name=url_names]').val();
+                var $ele = $('.dd-item[data-id=' + id + ']');
+                $ele.data('caption', caption);
+                $ele.data('icon_class', icon_class);
+                $ele.data('url', url);
+                $ele.data('url_names', url_names);
+                $ele.find('i').attr('class', icon_class);
+                $ele.find('.menu-caption').text(caption);
+                $('.dd').nestable('refresh');
+            })
+
+            $('.add-new-menu').click(function () {
+                $.ajax({
+                    url: '{{ request.path }}',
+                    method: 'POST',
+                    data: $('#menu-form').serialize(),
+                    dataType: 'JSON',
+                    success: function (data) {
+                        if (data.status === true) {
+                            var $ele = $(data.ele);
+                            $('.dd>.dd-list').append($ele);
+                        } else {
+                            alert('新增失败！')
+                        }
+                    }
+
+                })
+            })
+
+            $('.delete-menu').click(function () {
+                var id = $('#menu-form input[name=id]').val();
+                var $ele = $('.dd').find('.dd-item[data-id=' + id + ']');
+                var id_list = [id];
+                $ele.find('.dd-item[data-id]').each(function (i, ele) {
+                    id_list.push($(ele).data('id'));
+                });
+
+                $.ajax({
+                    url: '{{ request.path }}',
+                    method: 'DELETE',
+                    data: {id: id_list},
+                    traditional: true,
+                    dataType: 'JSON',
+                    success: function (data) {
+                        if (data.status === true) {
+                            $('.dd').nestable('remove', id);
+                        } else {
+                            alert('删除失败！')
+                        }
+
+                    }
+
+                })
+            })
+
+
+        })
+
+    </script>
+{% endblock %}
+
+{% block container %}
+    {% include 'include/page-title.html' %}
+    {% include 'include/breadcrumb.html' %}
+    <div id="page-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="dd">
+                            {{ all_menu_list|render_dd_menu|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel">
+
+                    <div class="panel-body">
+                        <form action="{{ request.path }}" id="menu-form" method="post" class="form-horizontal">
+                            {% csrf_token %}
+                            <input type="hidden" name="id">
+                            <div class="row">
+                                {% for field in form %}
+                                    <div class="form-group {% if field.errors %}has-error{% endif %}">
+                                        <label for="{{ field.id_for_label }}"
+                                               class="col-sm-2 control-label">{{ field.label }}</label>
+                                        <div class="col-sm-10">
+                                            {% if field.name == 'url_names' %}
+                                                {{ field|add_attrs:'class=form-control,data-role=tagsinput' }}
+                                            {% else %}
+                                                {{ field|add_attrs:'class=form-control' }}
+                                            {% endif %}
+                                            {% if field.errors %}
+                                                <p class="help-block">{{ field.errors.as_text }}</p>{% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </form>
+                    </div>
+                    <div class="panel-footer clearfix">
+                        <button type="button" class="btn btn-danger pull-left delete-menu">删除</button>
+                        <button type="button" class="btn btn-success pull-right add-new-menu">新增</button>
+                        <button type="button" class="btn btn-info pull-right save-menu-change mar-rgt">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

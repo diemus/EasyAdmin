@@ -1,0 +1,111 @@
+{% load utils %}
+<nav id="mainnav-container">
+    <div id="mainnav">
+
+        <!--Menu-->
+        <!--================================-->
+        <div id="mainnav-menu-wrap">
+            <div class="nano has-scrollbar">
+                <div class="nano-content">
+
+                    <!--Profile Widget-->
+                    <!--================================-->
+                    <div id="mainnav-profile" class="mainnav-profile">
+                        <div class="profile-wrap">
+                            <div class="pad-btm">
+                                {% if request.user.is_superuser %}
+                                <span class="label label-success pull-right">管理员</span>
+                                {% endif %}
+                                <img class="img-circle img-sm img-border" src="{{ request.user.avatar }}"
+                                     alt="Profile Picture">
+                            </div>
+                            <p class="mnp-name">{{ request.user.name }}</p>
+                            <span class="mnp-desc">{{ request.user.email }}</span>
+                        </div>
+                    </div>
+
+
+                    <!--Shortcut buttons-->
+                    <!--================================-->
+                    <div id="mainnav-shortcut">
+                        <ul class="list-unstyled">
+                            <li class="col-xs-3" data-content="My Profile">
+                                <a class="shortcut-grid" href="#">
+                                    <i class="demo-psi-male"></i>
+                                </a>
+                            </li>
+                            <li class="col-xs-3" data-content="Messages">
+                                <a class="shortcut-grid" href="#">
+                                    <i class="demo-psi-speech-bubble-3"></i>
+                                </a>
+                            </li>
+                            <li class="col-xs-3" data-content="Activity">
+                                <a class="shortcut-grid" href="#">
+                                    <i class="demo-psi-thunder"></i>
+                                </a>
+                            </li>
+                            <li class="col-xs-3" data-content="Lock Screen">
+                                <a class="shortcut-grid" href="#">
+                                    <i class="demo-psi-lock-2"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!--================================-->
+                    <!--End shortcut buttons-->
+
+                    {% get_active_menu_info request menu_list as active_menu_dict %}
+                    <ul id="mainnav-menu" class="list-group">
+                        {% for category in menu_list|dictsort:'order' %}
+                            <!--Category name-->
+                            <li class="list-header">{{ category.caption }}</li>
+                            <!--First Level Menu-->
+
+                            {% for menu_level_1 in category.submenu|dictsort:'order' %}
+
+                                <li class="{{ active_menu_dict|get_menu_class:menu_level_1.id}}">
+                                    <a href="{{ menu_level_1.url }}">
+                                        <i class="{{ menu_level_1.icon_class }}"></i>
+                                        <span class="menu-title">{{ menu_level_1.caption }}</span>
+                                        {% if menu_level_1.submenu %}<i class="arrow"></i>{% endif %}
+                                    </a>
+
+                                    {% if menu_level_1.submenu %}
+                                        <!--Second Level Menu-->
+                                        <ul class="collapse">
+                                            {% for menu_level_2 in menu_level_1.submenu|dictsort:'order' %}
+                                                <li class="{{ active_menu_dict|get_menu_class:menu_level_2.id}}">
+                                                    <a href="{{ menu_level_2.url }}">
+                                                        <i class="{{ menu_level_2.icon_class }}"></i>
+                                                        <span class="menu-title">{{ menu_level_2.caption }}</span>
+                                                        {% if menu_level_2.submenu %}<i class="arrow"></i>{% endif %}
+                                                    </a>
+                                                    {% if menu_level_2.submenu %}
+                                                        <!--Third Level Menu-->
+                                                        <ul class="collapse">
+                                                            {% for menu_level_3 in menu_level_2.submenu|dictsort:'order' %}
+                                                                <li class="{{ active_menu_dict|get_menu_class:menu_level_3.id}}">
+                                                                    <a href="{{ menu_level_3.url }}">
+                                                                        <i class="{{ menu_level_3.icon_class }}"></i>
+                                                                        <span class="menu-title">{{ menu_level_3.caption }}</span>
+                                                                    </a>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% endif %}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--================================-->
+        <!--End menu-->
+
+    </div>
+</nav>

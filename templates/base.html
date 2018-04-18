@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <!--STYLESHEET-->
+    <!--=================================================-->
+    <!--Bootstrap Stylesheet [ REQUIRED ]-->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <!--Nifty Stylesheet [ REQUIRED ]-->
+    <link href="/static/css/nifty.min.css" rel="stylesheet">
+    <!--Nifty Premium Icon [ DEMONSTRATION ]-->
+    <link href="/static/css/nifty-demo-icons.min.css" rel="stylesheet">
+
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/plugins/bootstrap-switch/bootstrap-switch.css">
+
+    <!--国旗图标-->
+    <link rel="stylesheet" href="/static/plugins/flag-icon-css/css/flag-icon.css">
+    <!--其他css文件-->
+    {% block css %}{% endblock %}
+
+
+    <!--JAVASCRIPT-->
+    <!--=================================================-->
+    <!--jQuery [ REQUIRED ]-->
+    <script src="/static/js/jquery-2.2.4.min.js"></script>
+
+    <script src="/static/js/jquery.cookie.js"></script>
+    <!--BootstrapJS [ RECOMMENDED ]-->
+    <script src="/static/js/bootstrap.min.js"></script>
+    <!--NiftyJS [ RECOMMENDED ]-->
+    <script src="/static/js/nifty.min.js"></script>
+
+    <script src="/static/plugins/bootstrap-switch/bootstrap-switch.js"></script>
+
+    <script>
+        $(function () {
+        /*初始化bootstrapSwitch*/
+        $("input[class='switch']").bootstrapSwitch();
+    })
+    </script>
+    <!--其他script文件-->
+    {% block js %}{% endblock %}
+</head>
+
+<body>
+<!-- CONTAINER -->
+<div id="container" class="effect aside-float aside-bright mainnav-lg">
+
+    <!--NAVBAR-->
+    <!--===================================================-->
+    {% block navbar %}
+        {% include 'include/nav.html' %}
+    {% endblock %}
+    <!--===================================================-->
+    <!--END NAVBAR-->
+
+    <div class="boxed">
+
+        <!--CONTENT CONTAINER-->
+        <!--===================================================-->
+        <div id="content-container">
+            {% block container %}{% endblock %}
+        </div>
+        <!--===================================================-->
+        <!--END CONTENT CONTAINER-->
+
+        <!--ASIDE-->
+        <!--===================================================-->
+        {% block aside %}
+            {% include 'include/aside.html' %}
+        {% endblock %}
+        <!--===================================================-->
+        <!--END ASIDE-->
+
+        <!--MAIN NAVIGATION-->
+        <!--===================================================-->
+
+        {% block main-nav %}
+            {% include 'include/main-nav.html' %}
+        {% endblock %}
+        <!--===================================================-->
+        <!--END MAIN NAVIGATION-->
+    </div>
+
+    <!-- FOOTER -->
+    <!--===================================================-->
+
+    {% block footer %}
+        {% include 'include/footer.html' %}
+    {% endblock %}
+    <!--===================================================-->
+    <!-- END FOOTER -->
+
+    <!-- SCROLL PAGE BUTTON -->
+    <!--===================================================-->
+    {% block scroll %}
+        {% include 'include/scroll-top-btn.html' %}
+    {% endblock %}
+    <!--===================================================-->
+    <!-- MODAL -->
+    <!--===================================================-->
+    {% block modal %}
+    {% endblock %}
+    <!--===================================================-->
+</div>
+
+<!--===================================================-->
+<!-- END OF CONTAINER -->
+</body>
+</html>

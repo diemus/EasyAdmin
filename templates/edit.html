@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load utils %}
+
+{% block css %}
+    <link rel="stylesheet" href="/static/plugins/bootstrap-datepicker/bootstrap-datepicker.css">
+{% endblock %}
+
+{% block js %}
+    <!--时间选择器-->
+    <script src="/static/plugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+    <script>
+        $(function () {
+            $('button[type=submit]').click(function () {
+                $('#dynamic-form').submit();
+            })
+        })
+
+    </script>
+
+{% endblock %}
+
+{% block container %}
+    {% include 'include/page-title.html' %}
+    {% include 'include/breadcrumb.html' %}
+    <div id="page-content">
+        <div class="div">
+            <div class="panel">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ model_label }}</h3>
+                </div>
+                <div class="panel-body">
+                    <form action="{{ request.path }}" id="dynamic-form" method="post" class="form-horizontal">
+                        {% csrf_token %}
+                        {% if object %}<input type="hidden" value="{{ object.pk }}" name="pk">{% endif %}
+                        <div class="row">
+                            {% for field in form %}
+                                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                                    <label for="{{ field.id_for_label }}" class="col-sm-2 control-label text-bold">{{ field.label }}</label>
+                                    <div class="col-sm-8">
+                                        {% if  field|get_field_type_of_form == 'BooleanField' %}
+                                            {{ field|add_attrs:'class=switch,data-on-color=success,data-off-color=danger' }}
+                                        {% else %}
+                                            {{ field|add_attrs:'class=form-control' }}
+                                        {% endif %}
+                                        {% if field.errors %}<p class="help-block">{{ field.errors.as_text }}</p>{% endif %}
+                                        {% if field.help_text %}<p class="help-block text-muted">{{ field.help_text }}</p>{% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+                <div class="panel-footer clearfix">
+                    <button type="button" class="btn btn-info pull-left" onclick="javascript:history.back(-1);">取消</button>
+                    <button type="submit" class="btn btn-success pull-right">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

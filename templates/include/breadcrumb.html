@@ -1,0 +1,9 @@
+<ol class="breadcrumb">
+    {% for i in breadcrumb %}
+        {% if not forloop.counter == breadcrumb|length %}
+            <li><a href="{{ i.url }}">{{ i.label }}</a></li>
+        {% else %}
+            <li class="active">{{ i.label }}</li>
+        {% endif %}
+    {% endfor %}
+</ol>

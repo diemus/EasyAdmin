@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+    <link rel="stylesheet" href="/static/plugins/bootstrap-table/bootstrap-table.css">
+    <link rel="stylesheet"
+          href="/static/plugins/bootstrap-table/extensions/filter-control/bootstrap-table-filter-control.css">
+    <link rel="stylesheet" href="/static/plugins/bootstrap-datepicker/bootstrap-datepicker.css">
+
+{% endblock %}
+
+{% block js %}
+    <script src="/static/plugins/bootstrap-table/bootstrap-table.js"></script>
+    <script src="/static/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+
+
+    <!--bootbox-->
+    <script src="/static/plugins/bootbox/bootbox.js"></script>
+
+
+    <!--时间选择器-->
+    <script src="/static/plugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+
+    <!--过滤-->
+    <script src="/static/plugins/bootstrap-table/extensions/filter-control/bootstrap-table-filter-control.js"></script>
+
+    <!--导出数据-->
+    <script src="/static/plugins/tableExport.jquery.plugin/tableExport.js"></script>
+    <script src="/static/plugins/bootstrap-table/extensions/export/bootstrap-table-export.js"></script>
+
+
+    <!--获取生成表格所需的动态参数，赋值为ParamsForBootstrapTable-->
+    <script src="{% url 'table_params' app_name model_name %}"></script>
+
+    <script>
+        $(function () {
+
+            //1.初始化Table
+            var oTable = new TableInit();
+            oTable.Init();
+
+            //2.初始化Button的点击事件
+            var oButtonInit = new ButtonInit();
+            oButtonInit.Init();
+
+        });
+
+
+        var TableInit = function () {
+            var oTableInit = new Object();
+            //初始化Table
+            oTableInit.Init = function () {
+                $('#data-table').bootstrapTable({
+                    url: '{% url 'table_data' app_name model_name %}',         //请求后台的URL（*）
+                    method: 'post',                      //请求方式（*）
+                    striped: true,                      //是否显示行间隔色
+                    cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    //maintainSelected:true,
+                    //rememberOrder:true,
+                    pagination: true,                   //是否显示分页（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    contentType: 'application/x-www-form-urlencoded',//Form格式发送
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 20,                       //每页的记录行数（*）
+                    pageList: [20, 50, 100, 'All'],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    search: true,                       //是否显示表格搜索
+                    searchOnEnterKey: false,              //设置为false时自动搜索，true会导致filter插件也需要回车才能过滤（已修改filter源码解决此问题）。
+                    strictSearch: true,                 //设置为 true启用全匹配搜索，否则为模糊搜索。
+                    showColumns: true,                  //是否显示所有的列
+                    showRefresh: true,                  //是否显示刷新按钮
+                    minimumCountColumns: 2,             //最少允许的列数
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    //uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+                    showToggle: false,                    //是否显示详细视图和列表视图的切换按钮
+                    showExport: true,
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    toolbar: '#toolbar',
+                    //buttonsToolbar: '#buttons-toolbar',
+                    exportDataType: 'basic',              //默认导出方法
+                    filterControl: false,
+                    filterStartsWithSearch: true,
+                    filterShowClear: true,
+                    columns: ParamsForBootstrapTable,
+                    ajaxOptions: {
+                        headers: {
+                            'X-CSRFToken': $.cookie('csrftoken')
+                        }
+                    },
+                    onLoadSuccess: function () { //加载成功时执行
+                        //console.log("加载成功");
+                    },
+                });
+            };
+
+            //得到查询的参数
+            oTableInit.queryParams = function (params) {
+                var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+                    limit: params.limit,   //页面大小
+                    offset: params.offset,  //页码
+                    order: params.order,   //排序方式
+                    search: params.search,  //搜索
+                    sort: params.sort,   //排序字段
+                    filter: params.filter,
+                };
+                return temp;
+            };
+            return oTableInit;
+        };
+
+
+        var ButtonInit = function () {
+            var oInit = new Object();
+            var postdata = {};
+
+            oInit.Init = function () {
+                //初始化页面上面的按钮事件
+                $('.add-data').click(function () {
+                    location.href = '{% url 'add' app_name model_name %}'
+                })
+
+                $('.btn-delete').click(function () {
+                    var rows = $('#data-table').bootstrapTable('getSelections');
+                    //如果未选中任何数据则直接返回
+                    if (rows.length === 0) {
+                        return
+                    }
+                    //选中数据则需要确认是否删除
+                    bootbox.confirm({
+                        title: "确认删除？",
+                        message: "所有选中的对象及其相关联的数据都会被删除！",
+                        buttons: {
+                            confirm: {
+                                label: '确认删除',
+                                className: 'btn-danger'
+                            },
+                            cancel: {
+                                label: '取消',
+                                className: 'btn-default'
+                            }
+                        },
+                        callback: function (result) {
+                            if (result) {
+                                var rows = $('#data-table').bootstrapTable('getSelections');
+                                var idList = [];
+                                $.each(rows, function (n, row) {
+                                    idList.push(row.id);
+                                });
+
+                                $.ajax({
+                                    url: "{% url 'delete' app_name model_name%}",
+                                    type: 'POST',
+                                    data: {pk: idList},
+                                    traditional: true,
+                                    dataType: 'JSON',
+                                    success: function (data) {
+                                        if (data.status === true) {
+                                            $('#data-table').bootstrapTable('refresh');
+                                        } else {
+                                            $('#data-table').bootstrapTable('refresh');
+                                            alert('删除失败，请重试！');
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    });
+
+
+                })
+            };
+
+            return oInit;
+        };
+
+        //处理表头末端操作按钮
+        function operateFormatter(value, row, index) {
+            var url = "{% url 'edit' app_name model_name %}/?pk="+row.id;
+            return [
+                '<a class="btn btn-xs btn-success" href=' + url + '><span class="glyphicon glyphicon-edit"></span></a>',
+            ].join('');
+        }
+
+        //设置界面
+        $(function () {
+            $('.settings .btn-save-change').click(function () {
+                var exportDataType = $('select.export-settings').val();
+                var filterControl = $('#filter-switch').bootstrapSwitch('state');
+                $('#data-table').bootstrapTable('refreshOptions', {
+                    exportDataType: exportDataType,
+                    filterControl: filterControl
+                });
+                $('#data-table').bootstrapTable('showAllColumns', {});
+                $('.settings').modal('hide');
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block container %}
+    {% include 'include/page-title.html' %}
+    {% include 'include/breadcrumb.html' %}
+    <div id="page-content">
+        <div class="div">
+            <div class="panel">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ model_label }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="toolbar" class="btn-group">
+                        <button type="button" class="btn btn-default add-data">
+                            <i class="glyphicon glyphicon-plus"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-tasks">
+                            <i class="glyphicon glyphicon-tasks"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-delete">
+                            <i class="glyphicon glyphicon-trash"></i>
+                        </button>
+                        <button type="button" class="btn btn-default" data-toggle="modal"
+                                data-target=".settings">
+                            <i class="glyphicon glyphicon-cog"></i>
+                        </button>
+                    </div>
+
+                    <table id="data-table"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modal %}
+    <div class="modal fade settings" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">设置</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">导出设置</label>
+                            <div class="col-sm-9">
+                                <select class="form-control export-settings">
+                                    <option value="basic">当前页面数据</option>
+                                    <option value="all">全部数据</option>
+                                    <option value="selected">选中数据</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">启用筛选</label>
+                            <div class="col-sm-9">
+                                <input type="checkbox" class="switch" id="filter-switch" data-on-color="success"
+                                       data-off-color="danger">
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary btn-save-change">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

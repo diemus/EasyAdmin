@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+
+{% block container %}
+    {% include 'include/page-title.html' %}
+    {% include 'include/breadcrumb.html' %}
+    <div id="page-content">
+        <div class="div">
+            {% for app_name,app_tables in table_list.items %}
+                <div class="panel panel-bordered panel-mint col-md-8">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ app_name|upper }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-hover table-vcenter">
+                            <thead>
+                            <tr>
+                                <th class="min-width">Device</th>
+                                <th>Name</th>
+                                <th class="text-center">Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for model_name,admin_cls in app_tables.items %}
+                                <tr class="row">
+                                    <td class="col-lg-8">
+                                        <a href="{% url 'table_data' app_name model_name %}">{{ model_name }}</a>
+                                    </td>
+                                    <td class="col-lg-2 btn-in-td">
+                                        <a href="#">
+                                            <span class="glyphicon glyphicon-plus"></span>
+                                            新增
+                                        </a>
+                                    </td>
+                                    <td class="col-lg-2 btn-in-td">
+                                        <a href="#">
+                                            <span class="glyphicon glyphicon-edit"></span>
+                                            编辑
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+{% endblock %}
